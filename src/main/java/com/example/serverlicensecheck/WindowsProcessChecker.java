@@ -31,7 +31,7 @@ public class WindowsProcessChecker {
             Process process = Runtime.getRuntime().exec("taskkill /F /IM " + "\"" +  processName + "\"");
             process.waitFor();
 
-            logger.info("Proces " + processName + " został zakończony.");
+            logger.info("Process " + processName + " has been determinate.");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error while trying to kill process: " + processName, e);
         }
