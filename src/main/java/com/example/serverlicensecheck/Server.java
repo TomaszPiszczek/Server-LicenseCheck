@@ -2,9 +2,12 @@ package com.example.serverlicensecheck;
 
 import com.example.serverlicensecheck.exception.ServerException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Server {
@@ -24,10 +27,23 @@ public class Server {
                 this.connectedClient = serverSocket.accept();
                 logger.info("Klient połączony: " + connectedClient.getInetAddress());
 
-                ClientHandler clientHandler = new ClientHandler(connectedClient);
-                clientHandler.handle();
+                try {
+                    ClientHandler clientHandler = new ClientHandler(connectedClient);
 
-                stopConnectionWithClient();
+                    // Odczytujemy dane wejściowe od klienta
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connectedClient.getInputStream()));
+                    String clientCommand;
+
+                    while ((clientCommand = in.readLine()) != null) {
+                        clientHandler.handle(clientCommand);
+                        System.out.println(clientCommand + "COMMAND");
+                    }
+                    stopConnectionWithClient();
+
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "Error processing client input", e);
+                }
+
             }
         } catch (IOException e) {
             throw new ServerException("Failed to start server", e);

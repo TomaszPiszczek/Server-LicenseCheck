@@ -25,25 +25,62 @@ public class ClientHandler {
         this.confirmationDialog = new ConfirmationDialog();
     }
 
-    public void handle() throws ServerException {
-        boolean isChromeRunning = windowsProcessChecker.isProcessRunning("Comarch Opt!ma.exe");
+    public void handle(String command) throws ServerException {
+        switch (command.toUpperCase()) {
+            case "CHECK":
+                handleCheck();
+                break;
+
+            case "SHUTDOWN":
+                handleShutdown();
+                break;
+
+            case "CLOSE":
+                handleClose();
+                break;
+
+            default:
+                logger.warning("Unknown command received: " + command);
+                sendBoolToClient(false);
+        }
+    }
+
+    private void handleCheck() throws ServerException {
+        boolean isChromeRunning = windowsProcessChecker.isProcessRunning("Chrome.exe");
 
         if (isChromeRunning) {
             SimpleAlert.showAlert("Panel w użyciu");
-            sendBoolToClient(true);
+        }
+        sendBoolToClient(isChromeRunning);
+    }
 
-        } else {
-            int dialogResponse = confirmationDialog.createConfirmationDialog(
-                    "Prośba o wyłączenie Comarch Optima.",
-                    "Zamknij program",
-                    "Akceptuj",
-                    "Odrzuć",
-                    "Akceptuj"
-            );
-            if (dialogResponse == JOptionPane.YES_OPTION) {
-                windowsProcessChecker.killProcess("Comarch Opt!ma.exe");
+    private void handleShutdown() throws ServerException {
+        int dialogResponse = confirmationDialog.createConfirmationDialog(
+                "Prośba o wyłączenie Comarch Optima.",
+                "Zamknij program",
+                "Akceptuj",
+                "Odrzuć",
+                "Akceptuj"
+        );
+
+        if (dialogResponse == JOptionPane.YES_OPTION) {
+            windowsProcessChecker.killProcess("Chrome.exe");
+        }
+        sendBoolToClient(dialogResponse == JOptionPane.YES_OPTION);
+    }
+
+    private void handleClose() {
+        System.out.println("GOT CLOSE FROM SERVER" + connectedClient.getInetAddress());
+        // Close any open dialogs or perform necessary clean-up here.
+       // confirmationDialog.dispose();
+
+        // Close the client connection
+        try {
+            if (connectedClient != null && !connectedClient.isClosed()) {
+                connectedClient.close();
             }
-            sendBoolToClient(dialogResponse == JOptionPane.YES_OPTION);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error closing client connection", e);
         }
     }
 
@@ -52,12 +89,10 @@ public class ClientHandler {
         try {
             sendToClient = new PrintWriter(connectedClient.getOutputStream(), true);
             sendToClient.println(bool);
-            logger.info("Sended to client: " + bool + " " + connectedClient.getInetAddress());
+            logger.info("Sent to client: " + bool + " " + connectedClient.getInetAddress());
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Not sended to client", e);
+            logger.log(Level.SEVERE, "Failed to send to client", e);
             throw new ServerException("Failed to send boolean to client", e);
-
-
         }
     }
 }

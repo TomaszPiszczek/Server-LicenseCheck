@@ -17,13 +17,13 @@ public class WindowsProcessChecker {
             String line;
             while ((line = listOfWindowsTasks.readLine()) != null) {
                 if (line.toLowerCase(Locale.ROOT).contains(processName.toLowerCase(Locale.ROOT))) {
-                    return false;
+                    return true;
                 }
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error checking if process is running: " + processName, e);
         }
-        return true;
+        return false;
     }
 
     public void killProcess(String processName) {
