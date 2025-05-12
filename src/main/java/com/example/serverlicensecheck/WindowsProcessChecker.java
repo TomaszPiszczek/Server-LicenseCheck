@@ -21,7 +21,7 @@ public class WindowsProcessChecker {
                 }
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error checking if process is running: " + processName, e);
+            //logger.log(Level.SEVERE, "Error checking if process is running: " + processName, e);
         }
         return false;
     }
@@ -31,9 +31,9 @@ public class WindowsProcessChecker {
             Process process = Runtime.getRuntime().exec("taskkill /F /IM " + "\"" +  processName + "\"");
             process.waitFor();
 
-            logger.info("Process " + processName + " has been determinate.");
+           // logger.info("Process " + processName + " has been determinate.");
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error while trying to kill process: " + processName, e);
+           // logger.log(Level.SEVERE, "Error while trying to kill process: " + processName, e);
         }
     }
 }
